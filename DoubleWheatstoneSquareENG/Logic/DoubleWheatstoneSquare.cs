@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 
 namespace DoubleWheatstoneSquareENG.Logic {
-    /** For filling encrypt table there are '@' and '$' added to english alphabet **/
+    /** For filling encrypt table there are '@' and '$' added to english alphabet.
+     * If amount of letters in input string is odd, added '$' symbol. 
+     */
     public class DoubleWheatstoneSquare {
         private string encryptedString;
         private string dencryptedString;
@@ -117,8 +119,6 @@ namespace DoubleWheatstoneSquareENG.Logic {
             int pointer = 0;
             
             string nonLetterPart1 = checkAndGetNonLetterOnIndex(dencryptedString, pointer);
-            encryptedString += nonLetterPart1;
-            pointer += nonLetterPart1.Length;
             for (int i = 0; i < dencryptedBigramsList.Count - 1; i += 2) {
                 string leftStartLetter = dencryptedBigramsList[i];
                 string rightStartLetter = dencryptedBigramsList[i + 1];
@@ -140,10 +140,14 @@ namespace DoubleWheatstoneSquareENG.Logic {
                 }
 
                 nonLetterPart1 = checkAndGetNonLetterOnIndex(dencryptedString, pointer);
-                pointer += nonLetterPart1.Length + 1;
+                pointer += nonLetterPart1.Length;
+                rightLetter = getLetterInCorrectCase(dencryptedString, pointer, rightLetter);
+                pointer++;
 
                 string nonLetterPart2 = checkAndGetNonLetterOnIndex(dencryptedString, pointer);
-                pointer += nonLetterPart2.Length + 1;
+                pointer += nonLetterPart2.Length;
+                leftLetter = getLetterInCorrectCase(dencryptedString, pointer, leftLetter);
+                pointer++;
                 encryptedString += nonLetterPart1 + rightLetter + nonLetterPart2 + leftLetter;
             }
             encryptedString += checkAndGetNonLetterOnIndex(dencryptedString, pointer);
@@ -195,19 +199,19 @@ namespace DoubleWheatstoneSquareENG.Logic {
             return result;
         }
 
-        // private string getLetterInCorrectCase(string source, int position, string target) {
-        //     if (position <= source.Length - 1) {
-        //         if ((source[position] + "").Equals((source[position] + "").ToUpper())) {
-        //             // primary letter in upper case
-        //             return target.ToUpper();
-        //         } else {
-        //             // primary letter in lower case
-        //             return target.ToLower();
-        //         }
-        //     } else {
-        //         return null;
-        //     }
-        // }
+        private string getLetterInCorrectCase(string source, int position, string target) {
+            if (position >= 0 && position <= source.Length - 1) {
+                if ((source[position] + "").Equals((source[position] + "").ToUpper())) {
+                    // primary letter in upper case
+                    return target.ToUpper();
+                } else {
+                    // primary letter in lower case
+                    return target.ToLower();
+                }
+            } else {
+                return null;
+            }
+        }
 
 
         public void printEncryptedTables() {
