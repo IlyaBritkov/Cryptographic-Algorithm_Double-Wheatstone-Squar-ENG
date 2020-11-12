@@ -111,10 +111,13 @@ namespace DoubleWheatstoneSquareENG.Logic {
 
         public string encrypt() {
             if (dencryptedString.Length == 0) {
-                throw new Exception("there is not data for encryption");
+                throw new Exception("There is not data for encryption");
             }
 
             createBigrams(dencryptedBigramsList, dencryptedString);
+            if (dencryptedBigramsList[dencryptedBigramsList.Count-1].Equals("$")) {
+                dencryptedString += "$";
+            }
             encryptedString = "";
             int pointer = 0;
             
@@ -126,15 +129,18 @@ namespace DoubleWheatstoneSquareENG.Logic {
                 Point startLeftPoint = findPoint(leftTable, leftStartLetter);
                 Point startRightPoint = findPoint(rightTable, rightStartLetter);
 
+                Console.WriteLine("startLeftPoint = " + leftStartLetter +": "+ startLeftPoint.getX() + "; " + startLeftPoint.getY());
+                Console.WriteLine("startRightPoint = " + rightStartLetter +": "+ startRightPoint.getX() + "; " + startRightPoint.getY());
+
                 string rightLetter;
                 string leftLetter;
-                if ((startLeftPoint.getX() == startRightPoint.getX()) ||
-                    (startLeftPoint.getY() == startRightPoint.getY())) {
-                    // both letter on same horizotnal string or on same vertical string 
+                if (startLeftPoint.getX() == startRightPoint.getX()) { // both letter on same horizontal string
                     rightLetter = rightTable[startLeftPoint.getX(), startLeftPoint.getY()];
                     leftLetter = leftTable[startRightPoint.getX(), startRightPoint.getY()];
-                } else {
-                    // both letter on different strings
+                }else if (startLeftPoint.getY() == startRightPoint.getY()) { // both letter on same vertical string
+                    rightLetter = rightTable[startLeftPoint.getX(), startRightPoint.getY()]; //
+                    leftLetter = leftTable[startRightPoint.getX(), startLeftPoint.getY()];  //
+                } else {  // both letter on different strings
                     rightLetter = rightTable[startLeftPoint.getX(), startRightPoint.getY()];
                     leftLetter = leftTable[startRightPoint.getX(), startLeftPoint.getY()];
                 }
@@ -149,26 +155,46 @@ namespace DoubleWheatstoneSquareENG.Logic {
                 leftLetter = getLetterInCorrectCase(dencryptedString, pointer, leftLetter);
                 pointer++;
                 encryptedString += nonLetterPart1 + rightLetter + nonLetterPart2 + leftLetter;
+                Console.WriteLine("rightLetter = " + rightLetter);
+                Console.WriteLine("leftLetter = " + leftLetter);
+                Console.WriteLine("----");
             }
+            
             encryptedString += checkAndGetNonLetterOnIndex(dencryptedString, pointer);
             return encryptedString;
         }
 
         public string dencrypt() {
             if (encryptedString.Length == 0) {
-                throw new Exception("there is not data for dencryption");
+                throw new Exception("There is not data for dencryption");
             }
 
             createBigrams(encryptedBigramsList, encryptedString);
+            if (encryptedBigramsList[encryptedBigramsList.Count-1].Equals("$")) {
+                encryptedString += "$";
+            }
 
-            encryptedString = "";
+            Console.WriteLine("DencryptedBigramsList:");
+            printList(dencryptedBigramsList);
+            Console.WriteLine("EncryptedBigramsList:");
+            printList(encryptedBigramsList);
+            printEncryptedTables();
+            
+            dencryptedString = "";
             int pointer = 0;
-            foreach (var letter in encryptedBigramsList) {
-                Point startLeftPoint = findPoint(leftTable, letter);
-                Point startRightPoint = findPoint(rightTable, letter);
+                                                                
+            string nonLetterPart1 = checkAndGetNonLetterOnIndex(encryptedString, pointer);
+            for (int i = 0; i < encryptedBigramsList.Count - 1; i+=2) {
+                Console.WriteLine("Loop iteration = " + dencryptedString); ////
+                string leftStartLetter = encryptedBigramsList[i];
+                string rightStartLetter = encryptedBigramsList[i + 1];
 
-                string rightLetter = "";
-                string leftLetter = "";
+                Point startLeftPoint = findPoint(leftTable, leftStartLetter);
+                Point startRightPoint = findPoint(rightTable, rightStartLetter);
+
+                string rightLetter;
+                string leftLetter;
+                
                 if ((startLeftPoint.getX() == startRightPoint.getX()) ||
                     (startLeftPoint.getY() == startRightPoint.getY())) {
                     // both letter on same horizotnal string or on same vertical string
@@ -179,11 +205,21 @@ namespace DoubleWheatstoneSquareENG.Logic {
                     leftLetter = leftTable[startRightPoint.getX(), startLeftPoint.getY()];
                     rightLetter = rightTable[startLeftPoint.getX(), startRightPoint.getY()];
                 }
+                
+                nonLetterPart1 = checkAndGetNonLetterOnIndex(encryptedString, pointer);
+                pointer += nonLetterPart1.Length;
+                rightLetter = getLetterInCorrectCase(encryptedString, pointer, rightLetter);
+                pointer++;
 
-                encryptedString += leftLetter + rightLetter;
+                string nonLetterPart2 = checkAndGetNonLetterOnIndex(encryptedString, pointer);
+                pointer += nonLetterPart2.Length;
+                leftLetter = getLetterInCorrectCase(encryptedString, pointer, leftLetter);
+                pointer++;
+                dencryptedString += nonLetterPart1 + rightLetter + nonLetterPart2 + leftLetter;
             }
-
-            return encryptedString;
+            
+            dencryptedString += checkAndGetNonLetterOnIndex(encryptedString, pointer);
+            return dencryptedString;
         }
 
         private string checkAndGetNonLetterOnIndex(string sourse, int point) {
@@ -215,20 +251,30 @@ namespace DoubleWheatstoneSquareENG.Logic {
 
 
         public void printEncryptedTables() {
+            Console.WriteLine("First table:");
             for (int x = 0; x < leftTable.GetLength(0); x += 1) {
                 for (int y = 0; y < leftTable.GetLength(1); y += 1) {
-                    Console.Write(leftTable[x, y]);
+                    Console.Write(leftTable[x, y] + "  ");
                 }
                 Console.WriteLine();
             }
             Console.WriteLine();
-            Console.WriteLine();
+            Console.WriteLine("Second table:");
             for (int x = 0; x < rightTable.GetLength(0); x += 1) {
                 for (int y = 0; y < rightTable.GetLength(1); y += 1) {
-                    Console.Write(rightTable[x, y]);
+                    Console.Write(rightTable[x, y] + "  ");
                 }
                 Console.WriteLine();
             }
         }
+        
+        // TODO: delete it
+        private void printList(List<string>list ) {
+            foreach (var str in list) {
+                Console.Write(str + " ");
+            }
+            Console.WriteLine();
+        }
+        
     }
 }
